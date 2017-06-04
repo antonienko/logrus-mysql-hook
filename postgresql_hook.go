@@ -40,7 +40,11 @@ var insertFunc = func(db *sql.DB, entry *logrus.Entry) error {
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO logs(level, message, message_data, created_at) VALUES ($1,$2,$3,$4);", entry.Level, entry.Message, jsonData, entry.Time)
+	stmt, err := db.Prepare("INSERT INTO logs(level, message, message_data, created_at) VALUES (?,?,?,?);")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(entry.Level, entry.Message, jsonData, entry.Time)
 	return err
 }
 
@@ -50,7 +54,11 @@ var asyncInsertFunc = func(txn *sql.Tx, entry *logrus.Entry) error {
 		return err
 	}
 
-	_, err = txn.Exec("INSERT INTO logs(level, message, message_data, created_at) VALUES ($1,$2,$3,$4);", entry.Level, entry.Message, jsonData, entry.Time)
+	stmt, err := txn.Prepare("INSERT INTO logs(level, message, message_data, created_at) VALUES (?,?,?,?);")
+	if err!= nil {
+		return err
+	}
+	_, err = stmt.Exec(entry.Level, entry.Message, jsonData, entry.Time)
 	return err
 }
 
